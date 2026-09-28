@@ -11,13 +11,19 @@ public class GitService{
         _repoPath = repoPath;
     }
 
-    public async void CheckGit()
+    public async Task<bool> CheckGit()
     {
         var result = await RunGitAsync("--version");
         if (!result.Success)
         {
             Console.WriteLine("'git' does not exists, you will have to install git!");
         }
+        else
+        {
+            Console.WriteLine("git check complete. git found!");
+            return true;
+        }
+        return false;
     }
 
     public async Task<GitResult> RunGitAsync(params string[] arguments)

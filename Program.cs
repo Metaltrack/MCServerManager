@@ -1,37 +1,57 @@
-﻿using MCServerManager.MCServerManager.Core.Services;
-using MCServerManager.MCServerManager.Core;
+﻿using MCServerManager.MCServerManager.Core.Models;
+using MCServerManager.MCServerManager.Core.Services;
 
-Console.Write("Repository path: ");
-
-string? repositoryPath = Console.ReadLine();
-
-if (string.IsNullOrWhiteSpace(repositoryPath))
+var profile = new ServerProfile
 {
-    Console.WriteLine("Invalid repository path.");
+    RepositoryPath = @"D:\Visual Studio Projects\MinecraftServerManager\TestMinecraftServer\TheTestServer",
+    ServerJar = "server.jar",
+    WorldName = "Test-World",
+    Port = 4567,
+    MinimumMemoryMb = 2048,
+    MaximumMemoryMb = 4096,
+    JavaExecutable = "java"
+};
+
+var minecraft =
+    new MinecraftServerService(profile);
+
+minecraft.OutputReceived += Console.WriteLine;
+
+minecraft.ProcessExited += exitCode =>
+{
+    Console.WriteLine(
+        $"Server exited with code {exitCode}"
+    );
+};
+
+bool started =
+    await minecraft.StartAsync();
+
+if (!started)
+{
+    Console.WriteLine(
+        "Could not start Minecraft server."
+    );
+
     return;
 }
 
-var git = new GitService(repositoryPath);
-
-var result = await git.GetStatusAsync();
-
-git.CheckGit();
-
-if (result.Success)
+while (minecraft.IsRunning)
 {
-    Console.WriteLine("Git status:");
+    string? command =
+        Console.ReadLine();
 
-    if (string.IsNullOrWhiteSpace(result.Output))
+    if (string.IsNullOrWhiteSpace(command))
+        continue;
+
+    await minecraft.SendCommandAsync(command);
+
+    if (command.Equals(
+        "stop",
+        StringComparison.OrdinalIgnoreCase))
     {
-        Console.WriteLine("Repository is clean.");
+        await minecraft.WaitForExitAsync();
+
+        break;
     }
-    else
-    {
-        Console.WriteLine(result.Output);
-    }
-}
-else
-{
-    Console.WriteLine("Git command failed:");
-    Console.WriteLine(result.Error);
 }

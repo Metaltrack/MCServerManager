@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <Folder Include="MCServerManager.CLI\" />
+    <Folder Include="MCServerManager.GUI\Assets\" />
+    <Folder Include="MCServerManager.GUI\Views\" />
+    <Folder Include="MCServerManager.GUI\ViewModels\" />
   </ItemGroup>
 
 </Project>
