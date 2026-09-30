@@ -6,6 +6,9 @@ namespace MCServerManager.MCServerManager.Core.Services;
 public class JavaHandlerService
 {
     private readonly string _repoPath;
+    private Process? _process;
+    public bool IsRunning => _process is not null && !_process.HasExited;
+
     public JavaInfo Info;
 
     public JavaHandlerService(string repoPath)
@@ -16,11 +19,17 @@ public class JavaHandlerService
 
     public async Task<string?> RunJavaAsync(params string[] arguments)
     {
+        if (IsRunning)
+        {
+            return null;
+        }
+
         var startInfo = new ProcessStartInfo
         {
-            FileName = "java",
+            FileName = (Info.ExecutablePath is not null) ? Info.ExecutablePath : "java",
             WorkingDirectory = _repoPath,
 
+            RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
 
@@ -33,14 +42,15 @@ public class JavaHandlerService
             startInfo.ArgumentList.Add(argument);
         }
 
-        using var process = new Process
+        _process = new Process
         {
-            StartInfo = startInfo
+            StartInfo = startInfo,
+            EnableRaisingEvents = true
         };
 
         try
         {
-            process.Start();
+            _process.Start();
         }
         catch
         {
@@ -48,12 +58,12 @@ public class JavaHandlerService
         }
 
         Task<string> outputTask =
-            process.StandardOutput.ReadToEndAsync();
+            _process.StandardOutput.ReadToEndAsync();
 
         Task<string> errorTask =
-            process.StandardError.ReadToEndAsync();
+            _process.StandardError.ReadToEndAsync();
 
-        await process.WaitForExitAsync();
+        await _process.WaitForExitAsync();
 
         string output = await outputTask;
         string error = await errorTask;

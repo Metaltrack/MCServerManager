@@ -6,6 +6,7 @@ namespace MCServerManager.MCServerManager.Core.Models;
 
 public class JavaInfo
 {
+    public string ExecutablePath { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
     public string VersionString { get; set; } = string.Empty;
     public string MajorVersion { get; set; } = string.Empty;
