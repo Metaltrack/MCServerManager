@@ -104,5 +104,4 @@ else
 var ServerProfile = new ServerProfile
 {
     Name = "Test Server",
-    RepositoryPath = 
-}
+};
