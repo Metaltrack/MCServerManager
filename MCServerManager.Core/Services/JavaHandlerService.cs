@@ -24,9 +24,14 @@ public class JavaHandlerService
             return null;
         }
 
+        if (string.IsNullOrEmpty(Info.ExecutablePath))
+        {
+            Info.ExecutablePath = "java";
+        }
+
         var startInfo = new ProcessStartInfo
         {
-            FileName = (Info.ExecutablePath is not null) ? Info.ExecutablePath : "java",
+            FileName = Info.ExecutablePath,
             WorkingDirectory = _repoPath,
 
             RedirectStandardInput = true,
@@ -36,7 +41,7 @@ public class JavaHandlerService
             UseShellExecute = false,
             CreateNoWindow = true
         };
-
+        Console.WriteLine($"stuff: {startInfo.FileName}");
         foreach (string argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);

@@ -1,5 +1,6 @@
 ﻿using MCServerManager.MCServerManager.Core.Models;
 using MCServerManager.MCServerManager.Core.Services;
+using System.Diagnostics.CodeAnalysis;
 
 //First we start with running the minecraft server
 /*
@@ -13,15 +14,15 @@ using MCServerManager.MCServerManager.Core.Services;
         |-- .gitignore
         |
         |-- Server
-                |
-                |-- World
-                |       |
-                |       |-- World files
-                |
-                |-- Server.jar
-                |
-                |
-                |-- Server stuff (more files)
+        |
+        |-- World
+        |       |
+        |       |-- World files
+        |
+        |-- Server.jar
+        |
+        |
+        |-- Server stuff (more files)
  */
 
 //We'll first need to provide java executable file, but we can first check automatically
@@ -36,7 +37,7 @@ if (string.IsNullOrWhiteSpace(path_to_server))
 }
 else
 {
-    Console.WriteLine("Proceeding...");
+    Console.WriteLine("Proceeding...\n");
 }
 
 var java = new JavaHandlerService(path_to_server);
@@ -104,4 +105,43 @@ else
 var ServerProfile = new ServerProfile
 {
     Name = "Test Server",
+    RepositoryUrl = "https://github.com/Metaltrack/TestMinecraftServer.git",
+    RepositoryPath = "D:\\Visual Studio Projects\\MinecraftServerManager\\TestMinecraftServer",
+    ServerJar = "server.jar",
+    WorldName = "Test-World",
+    Port = 6767
 };
+//other values are defaults
+//now we run the server
+
+Console.Write($"--------------------------------\n" +
+    $"Server Name: {ServerProfile.Name}\n" +
+    $"Server RepoURL: {ServerProfile.RepositoryUrl}\n" +
+    $"Server RepoPath: {ServerProfile.RepositoryPath}\n" +
+    $"Server JarFile Name: {ServerProfile.ServerJar}\n" +
+    $"Server World Name: {ServerProfile.WorldName}\n" +
+    $"Server Port: {ServerProfile.Port}\n" +
+    $"Server Minimum Memory Alloc: {ServerProfile.MinimumMemoryMb}Mb\n" +
+    $"Server Maximum Memory Alloc: {ServerProfile.MaximumMemoryMb}Mb\n" +
+    $"Server Java Executable: {ServerProfile.JavaExecutable}\n" +
+    $"Server Repo Branch: {ServerProfile.Branch}\n" +
+    $"--------------------------------\n");
+
+Console.WriteLine("\nStarting Server...");
+
+var minecraftService = new MinecraftServerService(ServerProfile);
+
+minecraftService.OutputReceived += message => { Console.WriteLine(message); };
+
+bool started = await minecraftService.StartAsync();
+
+if (!started)
+{
+    Console.WriteLine("Failed to start server...!!");
+}
+
+var notification = new NotificationService();
+string stuff = await notification.SendNotification($"Server {ServerProfile.Name} has started!!");
+Console.WriteLine(stuff);
+
+await minecraftService.WaitForExitAsync();
