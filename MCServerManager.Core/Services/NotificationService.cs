@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCServerManager.MCServerManager.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -9,6 +10,11 @@ namespace MCServerManager.MCServerManager.Core.Services;
 public class NotificationConfig
 {
     public string WebhookUrl { get; set; } = string.Empty;
+}
+
+public class Payload
+{
+    public string message = string.Empty;
 }
 
 public class NotificationService
@@ -61,7 +67,7 @@ public class NotificationService
             );
 
         startInfo.ArgumentList.Add(
-                $"{{\"content\": \"{message}\"}}"
+                $"{{\"content\": {message}}}"
             );
 
         Console.WriteLine("Running curl with following args: \n-------------------------------");
@@ -75,5 +81,44 @@ public class NotificationService
         process.Start();
         process.WaitForExit();
         return process.StandardError.ReadToEnd();
+    }
+
+    public async Task<string> ServerStart(ServerProfile profile, UserModel user)
+    {
+        string message =$"```ansi\r\n\u001b[0;37m██▀▀█▀▀█ ██ ██▀▀█ ██ ██▀▀▀▀▀▀ ██▀▀▀▀▀▀ ██▀▀▀▀▀█ █▀▀▀▀▀█ ██▀▀▀▀▀▀ ▀▀▀▀█▀▀▀\u001b[0m\r\n\u001b[0;37m██ ██ ██ ██ ██ ██ ██ ██▄▄▄▄▄  ██       ██▄▄▄▄▄█ █▄▄▄▄▄█ ██▄▄▄▄▄     ██   \u001b[0m\r\n\u001b[0;37m██    ██ ██ ██ ██ ██ ██       ██       ██   ▄█  █    ▄█ ██          ██   \u001b[0m\r\n\u001b[0;37m██    ██ ██ ██ ██▄▄█ ██▄▄▄▄▄▄ ██▄▄▄▄▄▄ ██   ██▄ █     █ ██          ██   \u001b[0m\r\n```" +
+
+            $"\n\n----------------------------------------------------------------\n\n" +
+            $"=ON= Server {profile.Name} | is active\n" +
+            $"At port {profile.Port}\n" +
+            $"User: {user.UserName}\n" +
+            $"Connection: {user.TailScaleIP}:{profile.Port}\n" +
+            $"User Message: {user.UserMessage}" +
+            $"\n\n----------------------------------------------------------------\n";
+
+        Payload payload = new Payload();
+        payload.message = message;
+
+        string msg = JsonSerializer.Serialize(payload.message);
+
+        return await SendNotification(msg);
+    }
+
+    public async Task<string> ServerStop(ServerProfile profile, UserModel user)
+    {
+        string message = $"```ansi\r\n\u001b[0;37m██▀▀█▀▀█ ██ ██▀▀█ ██ ██▀▀▀▀▀▀ ██▀▀▀▀▀▀ ██▀▀▀▀▀█ █▀▀▀▀▀█ ██▀▀▀▀▀▀ ▀▀▀▀█▀▀▀\u001b[0m\r\n\u001b[0;37m██ ██ ██ ██ ██ ██ ██ ██▄▄▄▄▄  ██       ██▄▄▄▄▄█ █▄▄▄▄▄█ ██▄▄▄▄▄     ██   \u001b[0m\r\n\u001b[0;37m██    ██ ██ ██ ██ ██ ██       ██       ██   ▄█  █    ▄█ ██          ██   \u001b[0m\r\n\u001b[0;37m██    ██ ██ ██ ██▄▄█ ██▄▄▄▄▄▄ ██▄▄▄▄▄▄ ██   ██▄ █     █ ██          ██   \u001b[0m\r\n```" +
+
+            $"\n\n----------------------------------------------------------------\n\n" +
+            $"-OFF- Server {profile.Name} | is inactive\n" +
+            $"User: {user.UserName}\n" +
+            $"Connection: Activate server to view connection!\n" +
+            $"User Message: User has shutdown the server" +
+            $"\n\n----------------------------------------------------------------\n";
+
+        Payload payload = new Payload();
+        payload.message = message;
+
+        string msg = JsonSerializer.Serialize(payload.message);
+
+        return await SendNotification(msg);
     }
 }

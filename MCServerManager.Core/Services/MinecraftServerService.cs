@@ -46,6 +46,11 @@ public class MinecraftServerService
             $"-Xmx{_profile.MaximumMemoryMb}M"
         );
 
+        foreach(string arg in _profile.JavaArgs)
+        {
+            startInfo.ArgumentList.Add(arg);
+        }
+
         startInfo.ArgumentList.Add("-jar");
         startInfo.ArgumentList.Add(_profile.ServerJar);
 

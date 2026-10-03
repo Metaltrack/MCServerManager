@@ -28,6 +28,13 @@ using System.Diagnostics.CodeAnalysis;
 //We'll first need to provide java executable file, but we can first check automatically
 //we also need the path to the server.jar
 
+var user = new UserModel
+{
+    UserName = "Metaltrack",
+    TailScaleIP = "100.108.159.104",
+    UserMessage = "I'm still testing ma chigas!!"
+};
+
 Console.WriteLine("Enter Path to git repository on your system: ");
 var path_to_server = Console.ReadLine();
 if (string.IsNullOrWhiteSpace(path_to_server))
@@ -141,7 +148,49 @@ if (!started)
 }
 
 var notification = new NotificationService();
-string stuff = await notification.SendNotification($"Server {ServerProfile.Name} has started!!");
+string stuff = await notification.ServerStart(ServerProfile, user);
 Console.WriteLine(stuff);
 
 await minecraftService.WaitForExitAsync();
+
+await notification.ServerStop(ServerProfile, user);
+
+//GUI Flow
+/*
+    
+ ~MCSeverManagerGUI~
+        |
+        |-- Selecting / Creating Server profile
+        |        |
+        |        |-- providing / checking java executable
+        |
+        |-- Checking git installation
+        |
+        |-- Checking git directory of the selected server profile
+        |
+        |-- Manually pulling from git (using a button) to avoid overwritting with older data
+        |
+        |-- Starting server
+        |        |
+        |        |-- Running server.jar with specified profiles
+        |        |
+        |        |-- Sending out notification on discord (if successful)
+        |
+        |-- Running state
+        |       |
+        |       |-- Sending commands through JAVA GUI / inbuilt GUI
+        |       |
+        |       |-- live logs on both GUI and JAVA GUI
+        |
+        |-- Stop server
+        |        |
+        |        |-- Stop server running state
+        |        |
+        |        |-- Commit changes
+        |        |
+        |        |-- Manual / automatic push to branch provided by the server profile
+        |
+        |-- Git check status
+        |-- Git Check push 
+      ~Fin~
+ */
